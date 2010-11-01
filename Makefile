@@ -1,10 +1,10 @@
 CFLAGS = -Wall -Wextra -Isrc/ -Isrc/tests/
 LFLAGS = -levent
 
-all: mystack tests
+all: needlestack tests
 
-mystack: src/mystack.o src/server.o
-	$(CC) $(CFLAGS) $(LFLAGS) src/mystack.o src/server.o -o mystack
+needlestack: src/needlestack.o src/server.o
+	$(CC) $(CFLAGS) $(LFLAGS) src/needlestack.o src/server.o -o needlestack
 
 tests_dir:
 	mkdir -p tests
@@ -18,5 +18,5 @@ indextrie_tests: src/indextrie.o src/tests/indextrie_tests.o
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 clean:
-	-@rm src/*.o src/tests/*.o mystack tests/* 2>/dev/null >/dev/null
+	-@rm src/*.o src/tests/*.o needlestack tests/* 2>/dev/null >/dev/null
 	-@rm -r tests 2>/dev/null >/dev/null
