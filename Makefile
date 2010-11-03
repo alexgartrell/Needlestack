@@ -1,10 +1,12 @@
 CFLAGS = -Wall -Wextra -Isrc/ -Isrc/tests/
 LFLAGS = -levent
 
+OBJS = src/needlestack.o src/server.o src/filestack.o src/indextrie.o
+
 all: needlestack tests
 
-needlestack: src/needlestack.o src/server.o
-	$(CC) $(CFLAGS) $(LFLAGS) src/needlestack.o src/server.o -o needlestack
+needlestack: $(OBJS)
+	$(CC) $(CFLAGS) $(LFLAGS) $(OBJS) -o needlestack
 
 tests_dir:
 	mkdir -p tests

@@ -14,7 +14,7 @@
 typedef int (*test_t)();
 
 #define TESTS_MAIN(...)                                         \
-    int main(int argc, char *argv[]) {                          \
+    int main() {                                                \
         test_t tests[] = {__VA_ARGS__};                         \
         int len = sizeof(tests) / sizeof((tests)[0]);           \
         int i;                                                  \
