@@ -1,0 +1,10 @@
+Needlestack is a static web file server that serves file stacks (as opposed
+to individual files).  It is based loosely (heavily) (entirely) upon Facebook's
+Haystack, with notable differences being the lack of an explicit in-file index
+as well as the use of a (poorly implemented) trie isntead of Google's sparse
+hash table.
+
+Dependencies include:
+    -libevent (for http serving)
+
+Needlestack was written by Alex Gartrell
