@@ -13,92 +13,78 @@
 #include <dbg.h>
 
 int FileStack_create(char *output, char *base, char *files[], int len) {
-    FileInfo *info = NULL;
     FILE *file = NULL;
     FILE *contentfile = NULL;
-    int nwritten = 0;
     unsigned int nread = 0;
-    struct stat statbuf;
-    int rcode = 0;
-    int offset = 0;
+    unsigned int nwritten = 0;
     char normalized_base[PATH_MAX + 1];
     int normalized_base_len = 0;
     char normalized_uri[PATH_MAX + 1];
+    char buff[4096];
     int i = 0;
-    
+    int x = 0;
+
     check(output && base && files != NULL && len > 0, "Invalid arguments");
     
     check(realpath(base, normalized_base) != NULL, "Failed to normalize base");
     normalized_base[PATH_MAX] = '\0';
     normalized_base_len = strlen(normalized_base);
 
-    info = calloc(sizeof(info[0]), len);
-    check(info != NULL, "Out of memory");
-
-    offset = sizeof(int) + len * sizeof(FileInfo);
-    for(i = 0; i < len; i++) {
-        rcode = stat(files[i], &statbuf);
-        check(rcode == 0, "Unable to stat file %s", files[i]);
-
-        info[i].offset = offset;
-        info[i].size = statbuf.st_size;
-
-        check(realpath(files[i], normalized_uri) != NULL,
-              "Failed to normalize file %s", files[i]);
-        check(!(strncmp(normalized_base, normalized_uri, normalized_base_len)),
-              "file %s is out of base %s\n", normalized_uri, normalized_base);
-                
-        strncpy(info[i].uri, normalized_uri + normalized_base_len,
-                MAX_URI_LENGTH);
-        info[i].uri[MAX_URI_LENGTH] = '\0';
-
-        offset += info[i].size;
-    }
-
-
     file = fopen(output, "w");
     check(file != NULL, "Failed to open %s for writing", output);
 
-    nwritten = fwrite(&len, sizeof(int), 1, file);
-    check(nwritten == 1, "Failed to write to file");
-
-    nwritten = fwrite(info, sizeof(info[0]), len, file);
-    check(nwritten == len, "Failed to write to file");
-
     for(i = 0; i < len; i++) {
+        check(realpath(files[i], normalized_uri) != NULL,
+              "Failed to normalize file %s", files[i]);
+        normalized_uri[PATH_MAX] = '\0';
+
+        check(!(strncmp(normalized_base, normalized_uri, normalized_base_len)),
+              "file %s is out of base %s\n", normalized_uri, normalized_base);
+        
+        x = strlen(normalized_uri + normalized_base_len);
+        check(fwrite(&x, sizeof(x), 1, file) == 1, "failed to write");
+
+        fprintf(file, "%s", normalized_uri + normalized_base_len);
+
         contentfile = fopen(files[i], "r");
         check(contentfile != NULL, "Unable to open contentfile");
-        char buff[4096];
+        
+        fseek(contentfile, 0, SEEK_END);
+        x = ftell(contentfile);
+        fseek(contentfile, 0, SEEK_SET);
+        
+        nwritten = fwrite(&x, sizeof(x), 1, file);
+        check(nwritten == 1, "failed to write");
+
+
         while((nread = fread(buff, 1, sizeof(buff), contentfile)) > 0) {
-            check(fwrite(buff, 1, nread, file) == nread,
-                  "Failed to write to file");
+            nwritten = fwrite(buff, 1, nread, file);
+            check(nwritten == nread, "Failed to write to file");
         }
+
         fclose(contentfile);
     }
     
     fclose(file);
-    free(info);
 
     return 0;
 error:
     if(file) fclose(file);
-    if(info) free(info);
 
     return -1;
 }
 
 FileStack *FileStack_load(char *path) {
     FileStack *fs = NULL;
+    FileInfo info;
     FILE *file = NULL;
-    int i = 0;
     int rcode = 0;
     struct stat stbuf;
-    unsigned int contentstart = 0;
 
     fs = calloc(sizeof(*fs), 1);
     check(fs, "Out of memory");
 
-    fs->index = IndexTrie_create();
+    fs->index = FileIndex_create();
     check(fs->index != NULL, "Failed to allocate fs->index");
 
     fs->fd = open(path, O_RDONLY);
@@ -113,30 +99,35 @@ FileStack *FileStack_load(char *path) {
 
     check(fs->filemem_len > sizeof(int), "File %s is malformed", path);
 
-    memcpy(&fs->info_len, fs->filemem, sizeof(int));
-    check(fs->info_len > 0, "Invalid info_len -- Broken File?");
+    unsigned int file_off = 0;
+    while(file_off < fs->filemem_len) {
+        char uri[MAX_URI_LENGTH + 1];
+        unsigned int len;
+        unsigned int off;
+        unsigned int size;
 
-    // Woo for type non-safety
-    fs->info = (FileInfo *) (fs->filemem + sizeof(int));
+        check(file_off + sizeof(int) <= fs->filemem_len, "Malformed file");
+        memcpy(&len, fs->filemem + file_off, sizeof(int));
+        file_off += sizeof(int);
 
-    check(fs->filemem_len > sizeof(int) + fs->info_len * sizeof(FileInfo),
-          "File %s is malformed", path);
-
-    contentstart = sizeof(int) + fs->info_len * sizeof(FileInfo);
-
-    // Further integrity checking
-    for(i = 0; i < fs->info_len; i++) {
-        unsigned int off = fs->info[i].offset;
-        unsigned int size = fs->info[i].size;
-
-        check(contentstart <= off && off < fs->filemem_len, "Malformed file");
-        check(contentstart <= off + size && off + size <= fs->filemem_len,
+        check(file_off + len < fs->filemem_len && len <= MAX_URI_LENGTH, 
               "Malformed file");
-    }
+        memcpy(uri, fs->filemem + file_off, len);
+        uri[len] = '\0';
+        file_off += len;
 
-    for(i = 0; i < fs->info_len; i++) {
-        printf("Adding %s\n", fs->info[i].uri);
-        rcode = IndexTrie_add(fs->index, fs->info[i].uri, i);
+        check(file_off + sizeof(int) <= fs->filemem_len, "Malformed file");
+        memcpy(&size, fs->filemem + file_off, sizeof(int));
+        file_off += sizeof(int);
+
+        check(file_off + size <= fs->filemem_len, "Malformed file");
+        off = file_off;
+        file_off += size;
+
+        // Now we have size, off, and uri
+        info.offset = off;
+        info.size = size;
+        rcode = FileIndex_add(fs->index, uri, &info);
         check(rcode == 0, "Failed to construct index");
     }
 
@@ -147,18 +138,17 @@ error:
     return NULL;
 }
 
-int FileStack_lookup(FileStack *fs, char *uri, int *offset, int *size) {
-    int idx = -1;
+int FileStack_lookup(FileStack *fs, char *uri, unsigned int *offset,
+                     unsigned int *size) {
+    FileInfo *info = NULL;
+
     check(fs && uri && offset && size, "Invalid arguments");
+    info = FileIndex_lookup(fs->index, uri);
 
-    idx = IndexTrie_lookup(fs->index, uri);
-    check(idx < fs->info_len, "index returned is out of range %d", idx);
+    if(info == NULL) return -1;
 
-    // No need to alarm anyone if we get a simple 404
-    if(idx < 0) return -2;
-    
-    *offset = fs->info[idx].offset;
-    *size = fs->info[idx].size;
+    *offset = info->offset;
+    *size = info->size;
     return 0;
 
 error:
@@ -167,7 +157,7 @@ error:
 
 void FileStack_free(FileStack *fs) {
     if(fs) {
-        IndexTrie_free(fs->index);
+        FileIndex_free(fs->index);
         if(fs->filemem) munmap(fs->filemem, fs->filemem_len);
         if(fs->fd > 0) close(fs->fd);
     }

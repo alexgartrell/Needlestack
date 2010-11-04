@@ -22,7 +22,6 @@ static void httpcallback(struct evhttp_request *req, void *data) {
         goto send404;
     }
 
-    printf("remote_host = %s\nuri = %s\n", req->remote_host, req->uri);
     rcode = FileStack_lookup(fs, req->uri, &offset, &size);
     if(rcode != 0) goto send404;
     

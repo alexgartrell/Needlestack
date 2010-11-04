@@ -1,21 +1,10 @@
-#include <indextrie.h>
+#include <fileindex.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <dbg.h>
-
-#define NUM_CHARS (1 << (sizeof(char) * 8))
-
-typedef struct Node {
-    struct Node *nodes[NUM_CHARS];
-    int index;
-} Node;
-
-struct IndexTrie {
-    Node *trie;
-};
 
 static Node *Node_create();
 static void Node_free(Node *);
@@ -24,7 +13,7 @@ static Node *Node_create() {
     Node *n = malloc(sizeof(*n));
     check(n != NULL, "Out of memory");
     memset(n, 0, sizeof(*n));
-    n->index = -1;
+    n->occupied = 0;
 
     return n;
 
@@ -43,33 +32,35 @@ static void Node_free(Node *n) {
     }
 }
 
-IndexTrie *IndexTrie_create() {
-    IndexTrie *it = calloc(sizeof(*it), 1);
-    check(it != NULL, "Out of memory");
+FileIndex *FileIndex_create() {
+    FileIndex *fi = calloc(sizeof(*fi), 1);
+    check(fi != NULL, "Out of memory");
 
-    it->trie = Node_create();
-    check(it->trie != NULL, "Out of memory");
+    fi->trie = Node_create();
+    check(fi->trie != NULL, "Node_create failed");
     
-    return it;
+    return fi;
 
 error:
-    IndexTrie_free(it);
+    FileIndex_free(fi);
     return NULL;
 }
 
 
-void IndexTrie_free(IndexTrie *it) {
-    Node_free(it->trie);
-    free(it);
+void FileIndex_free(FileIndex *fi) {
+    if(fi) {
+        Node_free(fi->trie);
+        free(fi);
+    }
 }
 
-int IndexTrie_add(IndexTrie *it, const char *name, int index) {
+int FileIndex_add(FileIndex *fi, const char *name, FileInfo *info) {
     const char *p;
     Node *cur;
 
-    check(it != NULL && name != NULL && index >= 0, "Invalid Arguments");
+    check(fi != NULL && name != NULL, "Invalid Arguments");
 
-    for(p = name, cur = it->trie; *p; p++) {
+    for(p = name, cur = fi->trie; *p; p++) {
         if(cur->nodes[(int) *p] == NULL) {
             cur->nodes[(int) *p] = Node_create();
             check(cur->nodes[(int) *p] != NULL, "Failed to create node");
@@ -77,7 +68,8 @@ int IndexTrie_add(IndexTrie *it, const char *name, int index) {
         cur = cur->nodes[(int) *p];
     }
 
-    cur->index = index;
+    cur->occupied = 1;
+    cur->info = *info;
 
     return 0;
 
@@ -85,16 +77,18 @@ error:
     return -1;
 }
 
-int IndexTrie_lookup(IndexTrie *it, const char *name) {
+FileInfo *FileIndex_lookup(FileIndex *fi, const char *name) {
     const char *p;
     Node *cur;
 
-    check(it != NULL && name != NULL, "Invalid Arguments");
+    check(fi != NULL && name != NULL, "Invalid Arguments");
     
-    for(p = name, cur = it->trie; *p && cur; p++)
+    for(p = name, cur = fi->trie; *p && cur; p++)
         cur = cur->nodes[(int) *p];
 
-    return (cur == NULL) ? -1 : cur->index;
+    if(cur == NULL || !cur->occupied) return NULL;
+
+    return &cur->info;
 
 error:
     return -1;
