@@ -5,6 +5,9 @@ OBJS = src/needlestack.o src/server.o src/filestack.o src/fileindex.o
 
 all: needlestack tests
 
+install: needlestack
+	install needlestack /usr/local/bin
+
 needlestack: $(OBJS)
 	$(CC) $(CFLAGS) $(LFLAGS) $(OBJS) -o needlestack
 

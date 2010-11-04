@@ -10,6 +10,15 @@
 
 #define DEFAULT_PORT 8080
 
+static char *USAGE = 
+    "\tneedlestack -f <stackfile.stack> [-p <port>]\n"
+    "\tneedlestack -c -f <stackfile.stack> -b <dir base> <path> <path> ...\n"
+    "\n"
+    "arguments: \n"
+    "\t -f <stackfile>\tstack file to use\n"
+    "\t -c \t\tcreate a new stack file\n"
+    "\t -b <basedir>\tspecify a base directory for stackfile creation\n";
+
 int main(int argc, char *argv[]) {
     int rcode = 0;
     short port = DEFAULT_PORT;
@@ -64,6 +73,7 @@ int main(int argc, char *argv[]) {
     return rcode;
 
 usage:
-    printf("Read the code\n");
+    printf("needlestack usage:\n");
+    printf("%s", USAGE);
     return 1;
 }
