@@ -4,7 +4,7 @@
 #define NUM_CHARS (1 << (sizeof(char) * 8))
 
 typedef struct FileInfo {
-    unsigned int offset;
+    void *ptr;
     unsigned int size;
 } FileInfo;
 

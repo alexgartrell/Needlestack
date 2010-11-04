@@ -91,5 +91,5 @@ FileInfo *FileIndex_lookup(FileIndex *fi, const char *name) {
     return &cur->info;
 
 error:
-    return -1;
+    return NULL;
 }

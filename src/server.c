@@ -12,7 +12,7 @@
 static void httpcallback(struct evhttp_request *req, void *data) {
     struct evbuffer *evbuffer;
     FileStack *fs = (FileStack *) data;
-    int offset = 0;
+    void *ptr;
     int size = 0;
     int rcode = 0;
 
@@ -22,10 +22,10 @@ static void httpcallback(struct evhttp_request *req, void *data) {
         goto send404;
     }
 
-    rcode = FileStack_lookup(fs, req->uri, &offset, &size);
+    rcode = FileStack_lookup(fs, req->uri, &ptr, &size);
     if(rcode != 0) goto send404;
     
-    evbuffer_add(evbuffer, fs->filemem + offset, size);
+    evbuffer_add(evbuffer, ptr, size);
     evhttp_send_reply(req, 200, "ok", evbuffer);
 
     evbuffer_free(evbuffer); evbuffer = NULL;

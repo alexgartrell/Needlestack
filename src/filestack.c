@@ -12,6 +12,19 @@
 
 #include <dbg.h>
 
+#define next_int(ptr, off, len, x) {                    \
+        check(off + sizeof(int) <= len, "Too short");   \
+        memcpy(&x, ptr + off, sizeof(int));             \
+        off += sizeof(int);                             \
+    }
+
+#define next_ptr(ptr, off, len, p, size) {  \
+        next_int(ptr, off, len, size);          \
+        check(off + size <= len, "Too short");  \
+        p = ptr + off;                          \
+        off += size;                            \
+    }
+
 int FileStack_create(char *output, char *base, char *files[], int len) {
     FILE *file = NULL;
     FILE *contentfile = NULL;
@@ -102,31 +115,17 @@ FileStack *FileStack_load(char *path) {
     unsigned int file_off = 0;
     while(file_off < fs->filemem_len) {
         char uri[MAX_URI_LENGTH + 1];
-        unsigned int len;
-        unsigned int off;
+        void *ptr;
         unsigned int size;
 
-        check(file_off + sizeof(int) <= fs->filemem_len, "Malformed file");
-        memcpy(&len, fs->filemem + file_off, sizeof(int));
-        file_off += sizeof(int);
+        next_ptr(fs->filemem, file_off, fs->filemem_len, ptr, size);
+        check(size <= MAX_URI_LENGTH, "uri is too long");
 
-        check(file_off + len < fs->filemem_len && len <= MAX_URI_LENGTH, 
-              "Malformed file");
-        memcpy(uri, fs->filemem + file_off, len);
-        uri[len] = '\0';
-        file_off += len;
+        memcpy(uri, ptr, size);
+        uri[size] = '\0';
 
-        check(file_off + sizeof(int) <= fs->filemem_len, "Malformed file");
-        memcpy(&size, fs->filemem + file_off, sizeof(int));
-        file_off += sizeof(int);
+        next_ptr(fs->filemem, file_off, fs->filemem_len, info.ptr, info.size);
 
-        check(file_off + size <= fs->filemem_len, "Malformed file");
-        off = file_off;
-        file_off += size;
-
-        // Now we have size, off, and uri
-        info.offset = off;
-        info.size = size;
         rcode = FileIndex_add(fs->index, uri, &info);
         check(rcode == 0, "Failed to construct index");
     }
@@ -138,16 +137,16 @@ error:
     return NULL;
 }
 
-int FileStack_lookup(FileStack *fs, char *uri, unsigned int *offset,
+int FileStack_lookup(FileStack *fs, char *uri, void **ptr,
                      unsigned int *size) {
     FileInfo *info = NULL;
 
-    check(fs && uri && offset && size, "Invalid arguments");
+    check(fs && uri && ptr && size, "Invalid arguments");
     info = FileIndex_lookup(fs->index, uri);
 
     if(info == NULL) return -1;
 
-    *offset = info->offset;
+    *ptr = info->ptr;
     *size = info->size;
     return 0;
 
