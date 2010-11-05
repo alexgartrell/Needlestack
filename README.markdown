@@ -17,7 +17,7 @@ Example Use:
 > \# To serve that stack on port 6767  
 > needlestack -f mystack.stack -p 6767  
 
-Dependencies:
+Dependencies:  
 - libevent (for http serving)
 
 
@@ -27,5 +27,3 @@ Arguments:
 > \-c              create a new stack file  
 > \-b \<basedir\>  specify a base directory for stackfile creation  
 
-
-Needlestack was written by Alex Gartrell
