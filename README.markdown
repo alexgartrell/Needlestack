@@ -11,10 +11,10 @@ Example Use:
 > needlestack -f <stackfile.stack> [-p <port>]
 > needlestack -c -f <stackfile.stack> -b <dir base> <path> <path> ...
 > 
-> # To make a stack with a directory (mydir)
+> \# To make a stack with a directory (mydir)
 > /bin/bash scripts/makestack.sh mystack.stack mydir
 >
-> # To serve that stack on port 6767
+> \# To serve that stack on port 6767
 > needlestack -f mystack.stack -p 6767
 
 Dependencies:
