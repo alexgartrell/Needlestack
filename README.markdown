@@ -8,8 +8,8 @@ as well as the use of a (poorly implemented) trie isntead of Google's sparse
 hash table.
 
 Example Use:
-> needlestack -f <stackfile.stack> [-p <port>]  
-> needlestack -c -f <stackfile.stack> -b <dir base> <path> <path> ...  
+> needlestack -f <stackfile.stack> [-p \<port\>]  
+> needlestack -c -f <stackfile.stack> -b \<dir base\> \<path\> \<path\> ...  
 > 
 > \# To make a stack with a directory (mydir)  
 > /bin/bash scripts/makestack.sh mystack.stack mydir  
@@ -23,9 +23,9 @@ Dependencies:
 
 
 Arguments:  
-> \-f <stackfile>\tstack file to use  
-> \-c \t\tcreate a new stack file  
-> \-b <basedir>\tspecify a base directory for stackfile creation  
+> \-f <stackfile>  stack file to use  
+> \-c              create a new stack file  
+> \-b \<basedir\>  specify a base directory for stackfile creation  
 
 
 Needlestack was written by Alex Gartrell
