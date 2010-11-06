@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <event.h>
 #include <evhttp.h>
@@ -31,6 +32,7 @@ static void httpcallback(struct evhttp_request *req, void *data) {
         else
             snprintf(uri_buff, sizeof(uri_buff), "%s/" DEFAULT_INDEX,
                      req->uri);
+        info = FileStack_lookup(fs, uri_buff);
     }
     if(info == NULL) goto send404;
     
