@@ -4,8 +4,8 @@
 
 int sanity_test() {
     FileIndex *fi = FileIndex_create();
-    int a, b;
-    FileInfo info[] = {{&a, 5}, {&b, 7}};
+    char a, b, c, d, e, f;
+    FileInfo info[] = {{&a, &b, &c, 5}, {&d, &e, &f, 7}};
     FileInfo *out;
 
     assert(FileIndex_lookup(fi, "foo") == NULL);

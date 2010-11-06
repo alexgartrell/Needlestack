@@ -16,39 +16,27 @@ static char *USAGE =
     "\n"
     "arguments: \n"
     "\t -f <stackfile>\tstack file to use\n"
-    "\t -c \t\tcreate a new stack file\n"
-    "\t -b <basedir>\tspecify a base directory for stackfile creation\n";
+    "\t -p <port>\tport to listen on\n";
 
 int main(int argc, char *argv[]) {
-    int rcode = 0;
     short port = DEFAULT_PORT;
 
     char *file = NULL;
-    char *base = ".";
-    int create = 0;
 
     FileStack *fs = NULL;
     
     int ch = 0;
 
     struct option options[] = {
-        {"create", no_argument, NULL, 'c'},
         {"file", required_argument, NULL, 'f'},
-        {"base", required_argument, NULL, 'b'},
         {"port", required_argument, NULL, 'p'},
         {NULL, 0, NULL, 0}
     };
 
     while((ch = getopt_long(argc, argv, "cb:f:p:", options, NULL)) != -1) {
         switch(ch) {
-        case 'c':
-            create = 1;
-            break;
         case 'f':
             file = optarg;
-            break;
-        case 'b':
-            base = optarg;
             break;
         case 'p':
             port = atoi(optarg);
@@ -58,19 +46,10 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    if(create) {
-        if(!file || !base) goto usage;
-
-        rcode = FileStack_create(file, base, argv + optind, argc - optind);
-    }
-    else {
-        if(!file) goto usage;
-        fs = FileStack_load(file);
+    if(!file) goto usage;
+    fs = FileStack_load(file);
         
-        rcode = start_server(port, fs);
-    }
-
-    return rcode;
+    return start_server(port, fs);
 
 usage:
     printf("needlestack usage:\n");

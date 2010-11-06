@@ -12,11 +12,8 @@ typedef struct FileStack {
     unsigned int filemem_len;
 } FileStack;
 
-int FileStack_create(char *output, char *base, char *files[], int len);
-
 FileStack *FileStack_load(char *path);
-int FileStack_lookup(FileStack *fs, char *uri, void **ptr, 
-                     unsigned int *size);
+FileInfo *FileStack_lookup(FileStack *fs, char *uri);
 void FileStack_free(FileStack *fs);
 
 #endif

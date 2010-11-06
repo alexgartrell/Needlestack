@@ -12,9 +12,8 @@
 static void httpcallback(struct evhttp_request *req, void *data) {
     struct evbuffer *evbuffer;
     FileStack *fs = (FileStack *) data;
-    void *ptr;
-    int size = 0;
-    int rcode = 0;
+    FileInfo *info;
+    char slen[20];
 
     evbuffer = evbuffer_new();
     if(evbuffer == NULL) {
@@ -22,10 +21,14 @@ static void httpcallback(struct evhttp_request *req, void *data) {
         goto send404;
     }
 
-    rcode = FileStack_lookup(fs, req->uri, &ptr, &size);
-    if(rcode != 0) goto send404;
+    info = FileStack_lookup(fs, req->uri);
+    if(info == NULL) goto send404;
     
-    evbuffer_add(evbuffer, ptr, size);
+    snprintf(slen, sizeof(slen), "%d", info->size);
+    evhttp_add_header(req->output_headers, "Content-Length", slen);
+    evhttp_add_header(req->output_headers, "Content-Type", info->content_type);
+
+    evbuffer_add(evbuffer, info->ptr, info->size);
     evhttp_send_reply(req, 200, "ok", evbuffer);
 
     evbuffer_free(evbuffer); evbuffer = NULL;

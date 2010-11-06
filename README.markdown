@@ -8,19 +8,14 @@ as well as the use of a (poorly implemented) trie isntead of Google's sparse
 hash table.
 
 Example Use:
-> needlestack -f <stackfile.stack> [-p \<port\>]  
-> needlestack -c -f <stackfile.stack> -b \<dir base\> \<path\> \<path\> ...  
-> 
-> \# To make a stack with a directory (mydir)  
-> /bin/bash scripts/makestack.sh mystack.stack mydir  
->
-> \# To serve that stack on port 6767  
-> needlestack -f mystack.stack -p 6767  
+> \# To make a stack with a directory (pics)  
+> python scripts/makestack.py pics.stack pics
+>  
+> \# To serve up the pics stack on port 12345  
+> needlestack -f pics.stack -p 12345  
 
 Dependencies:  
 - libevent (for http serving)
-
-
 
 Arguments:  
 > \-f <stackfile>  stack file to use  
