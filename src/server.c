@@ -9,11 +9,14 @@
 #include <filestack.h>
 #include <dbg.h>
 
+#define DEFAULT_INDEX "index.html"
+
 static void httpcallback(struct evhttp_request *req, void *data) {
     struct evbuffer *evbuffer;
     FileStack *fs = (FileStack *) data;
     FileInfo *info;
     char slen[20];
+    char uri_buff[1024];
 
     evbuffer = evbuffer_new();
     if(evbuffer == NULL) {
@@ -22,6 +25,13 @@ static void httpcallback(struct evhttp_request *req, void *data) {
     }
 
     info = FileStack_lookup(fs, req->uri);
+    if(info == NULL) {
+        if(req->uri[strlen(req->uri) - 1] == '/')
+            snprintf(uri_buff, sizeof(uri_buff), "%s" DEFAULT_INDEX, req->uri);
+        else
+            snprintf(uri_buff, sizeof(uri_buff), "%s/" DEFAULT_INDEX,
+                     req->uri);
+    }
     if(info == NULL) goto send404;
     
     snprintf(slen, sizeof(slen), "%d", info->size);
