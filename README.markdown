@@ -19,6 +19,5 @@ Dependencies:
 
 Arguments:  
 > \-f <stackfile>  stack file to use  
-> \-c              create a new stack file  
-> \-b \<basedir\>  specify a base directory for stackfile creation  
+> \-p <port>       port on which to listen for requests  
 
