@@ -23,5 +23,5 @@ fileindex_tests: src/fileindex.o src/tests/fileindex_tests.o
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 clean:
-	-@rm src/*.o src/tests/*.o needlestack tests/* 2>/dev/null >/dev/null
-	-@rm -r tests 2>/dev/null >/dev/null
+	@rm -rf src/*.o src/tests/*.o needlestack tests/*
+	@rm -rf tests
