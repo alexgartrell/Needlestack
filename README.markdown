@@ -21,3 +21,13 @@ Arguments:
 > \-f <stackfile>  stack file to use  
 > \-p <port>       port on which to listen for requests  
 
+
+## Facebook's Haystack ##
+
+About: [Needle in a haystack](http://www.facebook.com/note.php?note_id=76191543919)
+
+### Comparison of Needlestack and Haystack ###
+
+- Needlestack does not currently support real-time append (but could)
+- Needlestack's metadata is just size, uri, and content-type (as opposed to
+  key, alternate key, etc.)
