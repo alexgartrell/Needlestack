@@ -9,7 +9,7 @@ hash table.
 
 Example Use:
 > \# To make a stack with a directory (pics)  
-> python scripts/makestack.py pics.stack pics
+> python scripts/makestackfromdir.py pics.stack pics
 >  
 > \# To serve up the pics stack on port 12345  
 > needlestack -f pics.stack -p 12345  
