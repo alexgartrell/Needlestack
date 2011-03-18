@@ -37,13 +37,18 @@ def makestack(stackfile_path, dir):
             uri_base = '/' + os.path.relpath(root, dir)
         for f in files:
             uri = uri_base + '/' + f
+            write_string_to_file(stackfile, 'uri')
             write_string_to_file(stackfile, uri)
             path = os.path.join(root, f)
-            (type, encoding) = mimetypes.guess_type(path)
-            if type == None:
-                type = 'application/octet-stream'
-            write_string_to_file(stackfile, type)
+            (ctype, encoding) = mimetypes.guess_type(path)
+            if ctype == None:
+                tcype = 'application/octet-stream'
+            write_string_to_file(stackfile, 'content-type')
+            write_string_to_file(stackfile, ctype)
+            write_string_to_file(stackfile, 'data')
             write_file_to_file(stackfile, path)
+            write_string_to_file(stackfile, 'end_file')
+    write_string_to_file(stackfile, 'end_stack')
     stackfile.close()
 
 def main(argv):

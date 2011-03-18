@@ -11,8 +11,7 @@
 #define DEFAULT_PORT 8080
 
 static char *USAGE = 
-    "\tneedlestack -f <stackfile.stack> [-p <port>]\n"
-    "\tneedlestack -c -f <stackfile.stack> -b <dir base> <path> <path> ...\n"
+    "\t%s -f <stackfile.stack> [-p <port>]\n"
     "\n"
     "arguments: \n"
     "\t -f <stackfile>\tstack file to use\n"
@@ -53,6 +52,6 @@ int main(int argc, char *argv[]) {
 
 usage:
     printf("needlestack usage:\n");
-    printf("%s", USAGE);
+    printf(USAGE, argv[0]);
     return 1;
 }
